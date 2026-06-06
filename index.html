@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archcrylic OS - ReniQuid Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <canvas id="glcanvas"></canvas>
+
+    <div class="desktop-environment">
+        <header class="top-bar">
+            <div class="top-bar-trigger">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99z" />
+                    </svg>
+                    <span>Archcrylic</span>
+                </div>
+                <div class="clock" id="topbar-clock">00:00:00</div>
+                <div class="sys-status">
+                    <div class="status-item">
+                        <span id="cpu-load">0%</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="ram-usage">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="top-bar-dropdown" id="top-bar-dropdown">
+                <div class="dropdown-section">
+                    <div class="dropdown-title">APPLICATIONS</div>
+                    <div class="dropdown-grid">
+                        <button class="dropdown-item" onclick="toggleWindow('win-monitor')">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                                <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"
+                                    stroke-width="2" />
+                                <path d="M7 12h3l2-3 2 6 2-3h3" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <span>Monitor</span>
+                        </button>
+                        <button class="dropdown-item" onclick="toggleWindow('win-control')">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                                <path fill="currentColor"
+                                    d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
+                            </svg>
+                            <span>Settings</span>
+                        </button>
+                        <button class="dropdown-item" onclick="toggleWindow('win-terminal')">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                                <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"
+                                    stroke-width="2" />
+                                <path d="M8 9l3 3-3 3m5 0h3" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <span>Terminal</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-section">
+                    <div class="dropdown-title">SYSTEM CONTROLS</div>
+                    <div class="dropdown-controls-list">
+                        <div class="dropdown-control-item">
+                            <label>Volume</label>
+                            <input type="range" min="0" max="100" value="80">
+                        </div>
+                        <div class="dropdown-control-item">
+                            <label>Brightness</label>
+                            <input type="range" min="0" max="100" value="90">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="desktop-area">
+            <div class="window active" id="win-monitor" style="top: 15%; left: 10%; width: 380px;">
+                <div class="window-header">
+                    <div class="window-controls">
+                        <button class="control close" onclick="closeWindow('win-monitor')"></button>
+                        <button class="control minimize" onclick="minimizeWindow('win-monitor')"></button>
+                        <button class="control maximize" onclick="maximizeWindow('win-monitor')"></button>
+                    </div>
+                    <div class="window-title">System Monitor</div>
+                </div>
+                <div class="window-content">
+                    <div class="monitor-grid">
+                        <div class="monitor-card">
+                            <div class="card-label">CPU LOAD</div>
+                            <div class="card-value" id="monitor-cpu">0.0%</div>
+                            <div class="card-graph">
+                                <canvas id="cpu-graph-canvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="monitor-card">
+                            <div class="card-label">MEMORY USAGE</div>
+                            <div class="card-value" id="monitor-ram">0.0 GB</div>
+                            <div class="card-graph">
+                                <canvas id="ram-graph-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="window" id="win-control" style="top: 15%; right: 10%; width: 360px;">
+                <div class="window-header">
+                    <div class="window-controls">
+                        <button class="control close" onclick="closeWindow('win-control')"></button>
+                        <button class="control minimize" onclick="minimizeWindow('win-control')"></button>
+                        <button class="control maximize" onclick="maximizeWindow('win-control')"></button>
+                    </div>
+                    <div class="window-title">ReniQuid Engine Settings</div>
+                </div>
+                <div class="window-content">
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <label>Refraction Index (IOR)</label>
+                            <input type="range" id="param-ior" min="1.05" max="2.0" step="0.01" value="1.33">
+                            <span class="param-val" id="val-ior">1.33</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Damping Factor (C)</label>
+                            <input type="range" id="param-damping" min="0.1" max="10.0" step="0.1" value="2.0">
+                            <span class="param-val" id="val-damping">2.0</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Surface Tension (K)</label>
+                            <input type="range" id="param-tension" min="50" max="800" step="10" value="300">
+                            <span class="param-val" id="val-tension">300</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Fluid Temperature (Noise)</label>
+                            <input type="range" id="param-noise" min="0.0" max="0.1" step="0.005" value="0.02">
+                            <span class="param-val" id="val-noise">0.02</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Acrylic State</label>
+                            <div class="toggle-container">
+                                <button class="btn-toggle" id="btn-state-toggle">Liquify</button>
+                            </div>
+                        </div>
+                        <div class="setting-item" style="margin-top: 8px;">
+                            <button class="btn-reset" id="btn-settings-reset">Reset Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="window" id="win-terminal" style="top: 50%; left: 30%; width: 500px; height: 320px;">
+                <div class="window-header">
+                    <div class="window-controls">
+                        <button class="control close" onclick="closeWindow('win-terminal')"></button>
+                        <button class="control minimize" onclick="minimizeWindow('win-terminal')"></button>
+                        <button class="control maximize" onclick="maximizeWindow('win-terminal')"></button>
+                    </div>
+                    <div class="window-title">ReniQuid Interactive Console</div>
+                </div>
+                <div class="window-content terminal-container">
+                    <div class="terminal-history" id="term-history"></div>
+                    <div class="terminal-input-line">
+                        <span class="prompt">reniquid@archcrylic:~$</span>
+                        <input type="text" id="term-input" autocomplete="off" autofocus>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="dock-container">
+            <div class="dock">
+                <button class="dock-item" data-window="win-monitor" title="System Monitor">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"
+                            stroke-width="2" />
+                        <path d="M7 12h3l2-3 2 6 2-3h3" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button class="dock-item" data-window="win-control" title="Engine Settings">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <path fill="currentColor"
+                            d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
+                    </svg>
+                </button>
+                <button class="dock-item" data-window="win-terminal" title="Terminal">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"
+                            stroke-width="2" />
+                        <path d="M8 9l3 3-3 3m5 0h3" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
