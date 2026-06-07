@@ -21,8 +21,9 @@
 
   --acrylic-tint: rgba(14, 14, 20, 0.65);
   --acrylic-tint-heavy: rgba(14, 14, 20, 0.82);
-  --acrylic-blur: 24px;
+  --acrylic-blur: 0px;
   --acrylic-blur-heavy: 40px;
+  --acrylic-opacity: 0.45;
   --acrylic-border: rgba(255, 255, 255, 0.08);
   --acrylic-border-focus: rgba(255, 255, 255, 0.16);
 
@@ -471,7 +472,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, calc(var(--acrylic-opacity, 0.45) * 0.18));
   clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
   z-index: -2;
   pointer-events: none;
@@ -481,7 +482,7 @@ body {
   content: '';
   position: absolute;
   inset: 1px;
-  background: rgba(15, 18, 24, 0.45);
+  background: rgba(22, 24, 37, var(--acrylic-opacity, 0.45));
   clip-path: polygon(17.5px 0, calc(100% - 17.5px) 0, 100% 17.5px, 100% calc(100% - 17.5px), calc(100% - 17.5px) 100%, 17.5px 100%, 0 calc(100% - 17.5px), 0 17.5px);
   z-index: -1;
   pointer-events: none;

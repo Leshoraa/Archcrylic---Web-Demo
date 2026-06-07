@@ -41,8 +41,17 @@ export const SettingsApp = {
               <span class="material-symbols-rounded">blur_on</span>Acrylic Blur
             </div>
             <div class="slider-container">
-              <input type="range" class="slider" id="set-blur" min="0" max="60" value="24">
-              <span id="set-blur-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">24px</span>
+              <input type="range" class="slider" id="set-blur" min="0" max="60" value="0">
+              <span id="set-blur-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">0px</span>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-label">
+              <span class="material-symbols-rounded">opacity</span>Acrylic Opacity
+            </div>
+            <div class="slider-container">
+              <input type="range" class="slider" id="set-opacity" min="10" max="100" value="45">
+              <span id="set-opacity-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">45%</span>
             </div>
           </div>
         </div>
@@ -94,6 +103,15 @@ export const SettingsApp = {
       const v = parseInt(blurSlider.value);
       blurVal.textContent = v + 'px';
       document.documentElement.style.setProperty('--acrylic-blur', v + 'px');
+      if (reniquid) reniquid.setBlur(v / 60);
+    });
+
+    const opacitySlider = body.querySelector('#set-opacity');
+    const opacityVal = body.querySelector('#set-opacity-val');
+    opacitySlider.addEventListener('input', () => {
+      const v = parseInt(opacitySlider.value);
+      opacityVal.textContent = v + '%';
+      document.documentElement.style.setProperty('--acrylic-opacity', v / 100);
     });
 
     const wallpaperUpload = body.querySelector('#wallpaper-upload');

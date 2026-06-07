@@ -6,6 +6,7 @@ export class ReniQuidLayer {
     if (!this.gl) throw new Error('WebGL 2.0 not supported');
     this.running = false;
     this.intensity = 0.7;
+    this.blurAmount = 0.0;
     this.imageLoaded = false;
     this.mappedBoxes = new Float32Array(16 * 4);
     this.numBoxes = 0;
@@ -24,9 +25,11 @@ uniform vec2 u_resolution;
 uniform vec4 u_boxes[16];
 uniform int u_numBoxes;
 uniform sampler2D u_tex;
+uniform sampler2D u_texBlurred;
 uniform vec2 u_texRes;
 uniform float u_time;
 uniform float u_intensity;
+uniform float u_blurAmount;
 out vec4 fragColor;
 
 float sdPrismBox(vec3 p, vec3 b, float r, float c) {
@@ -63,20 +66,6 @@ vec2 getCoverUV(vec2 fc, vec2 res, vec2 texRes) {
   return (fc/res)*(res/ns) + off;
 }
 
-vec3 sampleTexBlurred(sampler2D tex, vec2 fc, vec2 res, vec2 texRes, float blurSize) {
-  vec3 sum = vec3(0.0);
-  sum += texture(tex, getCoverUV(fc + vec2(-1.0, -1.0) * blurSize, res, texRes)).rgb * 0.0625;
-  sum += texture(tex, getCoverUV(fc + vec2( 0.0, -1.0) * blurSize, res, texRes)).rgb * 0.125;
-  sum += texture(tex, getCoverUV(fc + vec2( 1.0, -1.0) * blurSize, res, texRes)).rgb * 0.0625;
-  sum += texture(tex, getCoverUV(fc + vec2(-1.0,  0.0) * blurSize, res, texRes)).rgb * 0.125;
-  sum += texture(tex, getCoverUV(fc, res, texRes)).rgb * 0.25;
-  sum += texture(tex, getCoverUV(fc + vec2( 1.0,  0.0) * blurSize, res, texRes)).rgb * 0.125;
-  sum += texture(tex, getCoverUV(fc + vec2(-1.0,  1.0) * blurSize, res, texRes)).rgb * 0.0625;
-  sum += texture(tex, getCoverUV(fc + vec2( 0.0,  1.0) * blurSize, res, texRes)).rgb * 0.125;
-  sum += texture(tex, getCoverUV(fc + vec2( 1.0,  1.0) * blurSize, res, texRes)).rgb * 0.0625;
-  return sum;
-}
-
 vec3 calcRefraction(vec3 rd, vec3 n, vec2 fc, vec2 res, vec2 texRes) {
   vec3 refR = refract(rd, n, 1.0/1.45);
   vec3 refG = refract(rd, n, 1.0/1.49);
@@ -87,13 +76,19 @@ vec3 calcRefraction(vec3 rd, vec3 n, vec2 fc, vec2 res, vec2 texRes) {
   vec2 coordG = fc + (refG.xy - rd.xy) * str;
   vec2 coordB = fc + (refB.xy - rd.xy) * str;
   
-  float blurSize = 24.0 * u_intensity;
+  vec3 sharp = vec3(
+    texture(u_tex, getCoverUV(coordR, res, texRes)).r,
+    texture(u_tex, getCoverUV(coordG, res, texRes)).g,
+    texture(u_tex, getCoverUV(coordB, res, texRes)).b
+  );
+
+  vec3 blurred = vec3(
+    texture(u_texBlurred, getCoverUV(coordR, res, texRes)).r,
+    texture(u_texBlurred, getCoverUV(coordG, res, texRes)).g,
+    texture(u_texBlurred, getCoverUV(coordB, res, texRes)).b
+  );
   
-  float r = sampleTexBlurred(u_tex, coordR, res, texRes, blurSize).r;
-  float g = sampleTexBlurred(u_tex, coordG, res, texRes, blurSize).g;
-  float b = sampleTexBlurred(u_tex, coordB, res, texRes, blurSize).b;
-  
-  return vec3(r, g, b);
+  return mix(sharp, blurred, u_blurAmount);
 }
 
 void main() {
@@ -162,13 +157,19 @@ void main() {
       boxes: gl.getUniformLocation(this.program, 'u_boxes'),
       numBoxes: gl.getUniformLocation(this.program, 'u_numBoxes'),
       tex: gl.getUniformLocation(this.program, 'u_tex'),
+      texBlurred: gl.getUniformLocation(this.program, 'u_texBlurred'),
       texRes: gl.getUniformLocation(this.program, 'u_texRes'),
       time: gl.getUniformLocation(this.program, 'u_time'),
       intensity: gl.getUniformLocation(this.program, 'u_intensity'),
+      blurAmount: gl.getUniformLocation(this.program, 'u_blurAmount'),
     };
 
     this.bgTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.bgTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+
+    this.bgTextureBlurred = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.bgTextureBlurred);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
 
     this.bgImage = new Image();
@@ -180,6 +181,22 @@ void main() {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      const blurCanvas = document.createElement('canvas');
+      const aspect = this.bgImage.width / this.bgImage.height;
+      blurCanvas.width = 512;
+      blurCanvas.height = Math.round(512 / aspect);
+      const ctx = blurCanvas.getContext('2d');
+      ctx.filter = 'blur(20px)';
+      ctx.drawImage(this.bgImage, 0, 0, blurCanvas.width, blurCanvas.height);
+
+      gl.bindTexture(gl.TEXTURE_2D, this.bgTextureBlurred);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, blurCanvas);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
       this.imageLoaded = true;
     };
 
@@ -257,10 +274,15 @@ void main() {
     gl.uniform1i(this.uniforms.numBoxes, this.numBoxes);
     gl.uniform1f(this.uniforms.time, time * 0.001);
     gl.uniform1f(this.uniforms.intensity, this.intensity);
+    gl.uniform1f(this.uniforms.blurAmount, this.blurAmount);
     if (this.imageLoaded) gl.uniform2f(this.uniforms.texRes, this.bgImage.width, this.bgImage.height);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.bgTexture);
     gl.uniform1i(this.uniforms.tex, 0);
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.bgTextureBlurred);
+    gl.uniform1i(this.uniforms.texBlurred, 1);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame((t) => this._render(t));
   }
@@ -282,6 +304,8 @@ void main() {
   }
 
   setIntensity(v) { this.intensity = Math.max(0, Math.min(1, v)); }
+
+  setBlur(v) { this.blurAmount = Math.max(0, Math.min(1, v)); }
 
   setImage(src) {
     this.bgImage.src = src;
