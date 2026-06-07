@@ -187,6 +187,12 @@ void main() {
       elements.push(notif.getBoundingClientRect());
     }
 
+    const launcher = document.getElementById('launcher');
+    const launcherPanel = document.getElementById('launcher-panel');
+    if (launcher && launcher.classList.contains('visible') && launcherPanel) {
+      elements.push(launcherPanel.getBoundingClientRect());
+    }
+
     const windows = document.querySelectorAll('.os-window');
     windows.forEach(win => {
       if (win.style.opacity !== '0' && win.style.display !== 'none') {

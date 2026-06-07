@@ -13,11 +13,13 @@ export class Launcher {
     this.el.innerHTML = `
       <div id="launcher-backdrop"></div>
       <div id="launcher-content">
-        <div id="launcher-search">
-          <span class="material-symbols-rounded">search</span>
-          <input type="text" placeholder="Search apps..." id="launcher-search-input" autocomplete="off">
+        <div id="launcher-panel">
+          <div id="launcher-search">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" placeholder="Search apps..." id="launcher-search-input" autocomplete="off">
+          </div>
+          <div id="launcher-grid"></div>
         </div>
-        <div id="launcher-grid"></div>
       </div>
     `;
   }
