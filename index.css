@@ -1067,6 +1067,25 @@ body {
   background: rgba(0, 0, 0, 0.15);
 }
 
+.browser-address-input {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: var(--shape-pill);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-on-surface);
+  caret-color: var(--color-primary);
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+
+.browser-address-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
