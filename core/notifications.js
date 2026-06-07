@@ -40,7 +40,7 @@ export class NotificationCenter {
       const card = document.createElement('div');
       card.className = 'notification-card';
       card.innerHTML = `
-        <div class="notif-icon" style="background:${n.color || '#3B2D6B'}">
+        <div class="notif-icon">
           <span class="material-symbols-rounded">${n.icon || 'notifications'}</span>
         </div>
         <div class="notif-content">
