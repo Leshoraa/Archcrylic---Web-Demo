@@ -40,6 +40,7 @@ export const FilesApp = {
       body.innerHTML = `
         <div class="files-body" style="height:100%">
           <div class="files-sidebar">
+            <div class="files-sidebar-header">PLACES</div>
             ${sideItems.map(s => `
               <div class="files-sidebar-item ${s === currentDir ? 'active' : ''}" data-dir="${s}">
                 <span class="material-symbols-rounded">${s === 'Home' ? 'home' : s === 'Documents' ? 'description' : s === 'Downloads' ? 'download' : s === 'Pictures' ? 'image' : s === 'Music' ? 'music_note' : 'movie'}</span>

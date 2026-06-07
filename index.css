@@ -360,12 +360,16 @@ body {
 #launcher-panel {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   padding: 24px 28px 28px;
-  border-radius: 20px;
+  border-radius: 16px;
   width: fit-content;
   min-width: 540px;
   max-width: 800px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--acrylic-border);
+  box-shadow: var(--shadow-xl);
   transition: box-shadow var(--dur-normal) var(--ease);
 }
 
@@ -374,6 +378,8 @@ body {
   align-items: center;
   gap: 10px;
   padding: 11px 16px;
+  border-radius: var(--shape-pill);
+  border: 1px solid var(--acrylic-border);
 }
 
 
@@ -874,11 +880,24 @@ body {
 
 .files-sidebar {
   width: 200px;
-  padding: 12px;
+  padding: 16px 12px;
   border-right: 1px solid var(--acrylic-border);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.files-sidebar-header {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-outline);
+  padding: 0 12px 8px;
+  opacity: 0.7;
 }
 
 .files-sidebar-item {
@@ -889,16 +908,18 @@ body {
   border-radius: var(--shape-sm);
   font-size: var(--text-sm);
   cursor: pointer;
-  transition: background var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast);
+  color: var(--color-on-surface-variant);
 }
 
 .files-sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-on-surface);
 }
 
 .files-sidebar-item.active {
-  background: rgba(196, 181, 253, 0.12);
-  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-on-surface);
 }
 
 .files-sidebar-item .material-symbols-rounded {
@@ -908,6 +929,7 @@ body {
 .files-content {
   flex: 1;
   padding: 16px;
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .files-grid {
@@ -981,6 +1003,33 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+.browser-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.browser-navbar {
+  padding: 12px;
+  border-bottom: 1px solid var(--acrylic-border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.browser-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.15);
 }
 
 ::-webkit-scrollbar {

@@ -15,16 +15,18 @@ const BrowserApp = {
   launch(wm) {
     const { body } = wm.createWindow({ title: 'Browser', appId: 'browser', width: 800, height: 540 });
     body.innerHTML = `
-      <div style="padding:12px;border-bottom:1px solid var(--acrylic-border);display:flex;gap:8px;align-items:center">
-        <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">arrow_back</span></button>
-        <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">arrow_forward</span></button>
-        <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">refresh</span></button>
-        <div style="flex:1;padding:8px 16px;border-radius:var(--shape-pill);background:rgba(255,255,255,0.06);font-size:var(--text-sm);color:var(--color-on-surface-variant)">archcrylic://home</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100% - 54px);gap:16px">
-        <span class="material-symbols-rounded" style="font-size:64px;color:var(--color-outline-variant)">public</span>
-        <div style="font-size:var(--text-lg);font-weight:500;color:var(--color-on-surface-variant)">Archcrylic Browser</div>
-        <div style="font-size:var(--text-sm);color:var(--color-outline)">Start exploring the web</div>
+      <div class="browser-body">
+        <div class="browser-navbar">
+          <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">arrow_back</span></button>
+          <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">arrow_forward</span></button>
+          <button class="taskbar-btn" style="width:30px;height:30px"><span class="material-symbols-rounded" style="font-size:16px">refresh</span></button>
+          <div style="flex:1;padding:8px 16px;border-radius:var(--shape-pill);background:rgba(255,255,255,0.06);font-size:var(--text-sm);color:var(--color-on-surface-variant)">archcrylic://home</div>
+        </div>
+        <div class="browser-content">
+          <span class="material-symbols-rounded" style="font-size:64px;color:var(--color-outline-variant)">public</span>
+          <div style="font-size:var(--text-lg);font-weight:500;color:var(--color-on-surface-variant)">Archcrylic Browser</div>
+          <div style="font-size:var(--text-sm);color:var(--color-outline)">Start exploring the web</div>
+        </div>
       </div>
     `;
   }
