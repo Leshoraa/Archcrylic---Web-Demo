@@ -454,9 +454,8 @@ body {
 
 .os-window {
   position: absolute;
-  min-width: 420px;
-  min-height: 300px;
-  border-radius: var(--shape-lg);
+  min-width: 280px;
+  min-height: 240px;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -464,7 +463,28 @@ body {
   flex-direction: column;
   overflow: hidden;
   transition: box-shadow var(--dur-fast);
-  animation: windowOpen var(--dur-slow) var(--ease) forwards;
+  animation: windowOpen var(--dur-slow) var(--ease);
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
+}
+
+.os-window::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.08);
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
+  z-index: -2;
+  pointer-events: none;
+}
+
+.os-window::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: rgba(15, 18, 24, 0.45);
+  clip-path: polygon(17.5px 0, calc(100% - 17.5px) 0, 100% 17.5px, 100% calc(100% - 17.5px), calc(100% - 17.5px) 100%, 17.5px 100%, 0 calc(100% - 17.5px), 0 17.5px);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .os-window.focused {
@@ -498,7 +518,7 @@ body {
 .window-titlebar {
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 24px;
   height: 44px;
   flex-shrink: 0;
   background: transparent;

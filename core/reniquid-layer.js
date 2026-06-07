@@ -32,10 +32,10 @@ out vec4 fragColor;
 float sdPrismBox(vec3 p, vec3 b, float r) {
   vec3 d = abs(p) - b;
   float box = length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0) - r;
+  float c = 54.0 / u_resolution.y;
   vec3 pCut = abs(p);
-  float cut1 = dot(pCut.xy, vec2(0.70710678)) - (b.x + b.y) * 0.707;
-  float cut2 = dot(pCut.yz, vec2(0.70710678)) - (b.y + b.z) * 0.707;
-  return max(box, max(cut1, cut2));
+  float cut1 = dot(pCut.xy, vec2(0.70710678)) - (b.x + b.y - c) * 0.70710678;
+  return max(box, cut1);
 }
 
 float map(vec3 p) {

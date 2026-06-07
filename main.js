@@ -450,16 +450,18 @@ const CalculatorApp = {
 
     const render = () => {
       body.innerHTML = `
-        <div style="padding:24px 20px 16px;text-align:right;font-size:var(--text-2xl);font-weight:300;color:var(--color-on-surface);overflow:hidden;text-overflow:ellipsis">${display}</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px 12px">
-          ${['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','0','.','='].map((b,i) => {
-            const isOp = ['÷','×','−','+','='].includes(b);
-            const isFunc = ['C','±','%'].includes(b);
-            const bg = isOp ? 'var(--color-primary)' : isFunc ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)';
-            const color = isOp ? 'var(--color-surface)' : 'var(--color-on-surface)';
-            const span = (i === 16) ? 'grid-column:span 2;' : '';
-            return `<button data-val="${b}" style="${span}padding:16px;border:none;border-radius:var(--shape-md);background:${bg};color:${color};font-family:var(--font-sans);font-size:var(--text-lg);cursor:pointer;transition:filter var(--dur-fast)" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter=''">${b}</button>`;
-          }).join('')}
+        <div style="height:100%;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;justify-content:space-between;padding-bottom:12px">
+          <div style="padding:32px 24px 16px;text-align:right;font-size:var(--text-3xl);font-weight:300;color:var(--color-on-surface);overflow:hidden;text-overflow:ellipsis">${display}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 16px">
+            ${['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','0','.','='].map((b,i) => {
+              const isOp = ['÷','×','−','+','='].includes(b);
+              const isFunc = ['C','±','%'].includes(b);
+              const bg = isOp ? 'var(--color-primary)' : isFunc ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)';
+              const color = isOp ? 'var(--color-surface)' : 'var(--color-on-surface)';
+              const span = (i === 16) ? 'grid-column:span 2;' : '';
+              return `<button data-val="${b}" style="${span}padding:16px;border:none;border-radius:var(--shape-md);background:${bg};color:${color};font-family:var(--font-sans);font-size:var(--text-lg);cursor:pointer;transition:filter var(--dur-fast)" onmouseover="this.style.filter='brightness(1.25)'" onmouseout="this.style.filter=''">${b}</button>`;
+            }).join('')}
+          </div>
         </div>
       `;
       body.querySelectorAll('button').forEach(btn => {
@@ -523,6 +525,15 @@ async function boot() {
   });
 
   bus.on('app:launch', (appId) => {
+    const activeWins = wm.getWindowsByApp(appId);
+    const minimizedWins = activeWins.filter(w => w.minimized);
+    if (minimizedWins.length > 0) {
+      minimizedWins.forEach(win => wm.restoreWindow(win.id));
+      return;
+    } else if (activeWins.length > 0) {
+      wm.focusWindow(activeWins[0].id);
+      return;
+    }
     const app = allApps.find(a => a.id === appId);
     if (app) app.launch(wm, bus, reniquid);
   });
