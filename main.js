@@ -503,9 +503,19 @@ const CalculatorApp = {
 async function boot() {
   const bootScreen = document.getElementById('boot-screen');
 
+  const savedWallpaper = localStorage.getItem('archcrylic_wallpaper') || 'assets/wallpaper.png';
+  const savedBlur = localStorage.getItem('archcrylic_blur') || '0';
+  const savedOpacity = localStorage.getItem('archcrylic_opacity') || '45';
+  const savedIntensity = localStorage.getItem('archcrylic_intensity') || '70';
+
+  document.documentElement.style.setProperty('--acrylic-blur', savedBlur + 'px');
+  document.documentElement.style.setProperty('--acrylic-opacity', parseInt(savedOpacity) / 100);
+
   const canvas = document.getElementById('reniquid-canvas');
-  const reniquid = new ReniQuidLayer(canvas, 'assets/wallpaper.png');
+  const reniquid = new ReniQuidLayer(canvas, savedWallpaper);
   reniquid.init();
+  reniquid.setBlur(parseInt(savedBlur) / 60);
+  reniquid.setIntensity(parseInt(savedIntensity) / 100);
   reniquid.start();
 
   const shell = new Shell();

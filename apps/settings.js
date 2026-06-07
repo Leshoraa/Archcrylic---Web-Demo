@@ -8,6 +8,15 @@ export const SettingsApp = {
 
   launch(wm, bus, reniquid) {
     const { body } = wm.createWindow({ title: 'Settings', appId: 'settings', width: 580, height: 480 });
+    
+    const intensityVal = localStorage.getItem('archcrylic_intensity') || '70';
+    const blurValInit = localStorage.getItem('archcrylic_blur') || '0';
+    const opacityValInit = localStorage.getItem('archcrylic_opacity') || '45';
+    
+    const darkmodeOn = localStorage.getItem('archcrylic_darkmode') !== 'false';
+    const notifOn = localStorage.getItem('archcrylic_notifications') !== 'false';
+    const animOn = localStorage.getItem('archcrylic_animations') !== 'false';
+
     body.innerHTML = `
       <div class="settings-body">
         <div class="settings-section">
@@ -16,7 +25,7 @@ export const SettingsApp = {
             <div class="settings-item-label">
               <span class="material-symbols-rounded">dark_mode</span>Dark Mode
             </div>
-            <button class="toggle on" id="set-darkmode"></button>
+            <button class="toggle ${darkmodeOn ? 'on' : ''}" id="set-darkmode"></button>
           </div>
           <div class="settings-item">
             <div class="settings-item-label">
@@ -32,8 +41,8 @@ export const SettingsApp = {
               <span class="material-symbols-rounded">water_drop</span>ReniQuid Intensity
             </div>
             <div class="slider-container">
-              <input type="range" class="slider" id="set-fluid" min="0" max="100" value="70">
-              <span id="set-fluid-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">70%</span>
+              <input type="range" class="slider" id="set-fluid" min="0" max="100" value="${intensityVal}">
+              <span id="set-fluid-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">${intensityVal}%</span>
             </div>
           </div>
           <div class="settings-item">
@@ -41,8 +50,8 @@ export const SettingsApp = {
               <span class="material-symbols-rounded">blur_on</span>Acrylic Blur
             </div>
             <div class="slider-container">
-              <input type="range" class="slider" id="set-blur" min="0" max="60" value="0">
-              <span id="set-blur-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">0px</span>
+              <input type="range" class="slider" id="set-blur" min="0" max="60" value="${blurValInit}">
+              <span id="set-blur-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">${blurValInit}px</span>
             </div>
           </div>
           <div class="settings-item">
@@ -50,8 +59,8 @@ export const SettingsApp = {
               <span class="material-symbols-rounded">opacity</span>Acrylic Opacity
             </div>
             <div class="slider-container">
-              <input type="range" class="slider" id="set-opacity" min="10" max="100" value="45">
-              <span id="set-opacity-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">45%</span>
+              <input type="range" class="slider" id="set-opacity" min="10" max="100" value="${opacityValInit}">
+              <span id="set-opacity-val" style="font-size:var(--text-sm);color:var(--color-on-surface-variant);min-width:32px">${opacityValInit}%</span>
             </div>
           </div>
         </div>
@@ -61,13 +70,13 @@ export const SettingsApp = {
             <div class="settings-item-label">
               <span class="material-symbols-rounded">notifications</span>Notifications
             </div>
-            <button class="toggle on" id="set-notif"></button>
+            <button class="toggle ${notifOn ? 'on' : ''}" id="set-notif"></button>
           </div>
           <div class="settings-item">
             <div class="settings-item-label">
               <span class="material-symbols-rounded">animation</span>Animations
             </div>
-            <button class="toggle on" id="set-anim"></button>
+            <button class="toggle ${animOn ? 'on' : ''}" id="set-anim"></button>
           </div>
         </div>
         <div class="settings-section">
@@ -89,12 +98,28 @@ export const SettingsApp = {
       btn.addEventListener('click', () => btn.classList.toggle('on'));
     });
 
+    body.querySelector('#set-darkmode').addEventListener('click', (e) => {
+      const on = e.currentTarget.classList.contains('on');
+      localStorage.setItem('archcrylic_darkmode', on ? 'true' : 'false');
+    });
+
+    body.querySelector('#set-notif').addEventListener('click', (e) => {
+      const on = e.currentTarget.classList.contains('on');
+      localStorage.setItem('archcrylic_notifications', on ? 'true' : 'false');
+    });
+
+    body.querySelector('#set-anim').addEventListener('click', (e) => {
+      const on = e.currentTarget.classList.contains('on');
+      localStorage.setItem('archcrylic_animations', on ? 'true' : 'false');
+    });
+
     const fluidSlider = body.querySelector('#set-fluid');
     const fluidVal = body.querySelector('#set-fluid-val');
     fluidSlider.addEventListener('input', () => {
       const v = parseInt(fluidSlider.value);
       fluidVal.textContent = v + '%';
       if (reniquid) reniquid.setIntensity(v / 100);
+      localStorage.setItem('archcrylic_intensity', v);
     });
 
     const blurSlider = body.querySelector('#set-blur');
@@ -104,6 +129,7 @@ export const SettingsApp = {
       blurVal.textContent = v + 'px';
       document.documentElement.style.setProperty('--acrylic-blur', v + 'px');
       if (reniquid) reniquid.setBlur(v / 60);
+      localStorage.setItem('archcrylic_blur', v);
     });
 
     const opacitySlider = body.querySelector('#set-opacity');
@@ -112,6 +138,7 @@ export const SettingsApp = {
       const v = parseInt(opacitySlider.value);
       opacityVal.textContent = v + '%';
       document.documentElement.style.setProperty('--acrylic-opacity', v / 100);
+      localStorage.setItem('archcrylic_opacity', v);
     });
 
     const wallpaperUpload = body.querySelector('#wallpaper-upload');
@@ -124,6 +151,11 @@ export const SettingsApp = {
           const reader = new FileReader();
           reader.onload = (event) => {
             if (reniquid) reniquid.setImage(event.target.result);
+            try {
+              localStorage.setItem('archcrylic_wallpaper', event.target.result);
+            } catch (err) {
+              console.error('Wallpaper too large for localStorage:', err);
+            }
           };
           reader.readAsDataURL(file);
         }
