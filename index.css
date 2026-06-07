@@ -485,6 +485,8 @@ body {
   clip-path: polygon(17.5px 0, calc(100% - 17.5px) 0, 100% 17.5px, 100% calc(100% - 17.5px), calc(100% - 17.5px) 100%, 17.5px 100%, 0 calc(100% - 17.5px), 0 17.5px);
   z-index: -1;
   pointer-events: none;
+  backdrop-filter: blur(var(--acrylic-blur, 24px));
+  -webkit-backdrop-filter: blur(var(--acrylic-blur, 24px));
 }
 
 .os-window.focused {

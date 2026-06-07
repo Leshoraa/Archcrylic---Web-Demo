@@ -450,7 +450,7 @@ const CalculatorApp = {
 
     const render = () => {
       body.innerHTML = `
-        <div style="height:100%;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;justify-content:space-between;padding-bottom:12px">
+        <div style="height:100%;background:transparent;display:flex;flex-direction:column;justify-content:space-between;padding-bottom:12px">
           <div style="padding:32px 24px 16px;text-align:right;font-size:var(--text-3xl);font-weight:300;color:var(--color-on-surface);overflow:hidden;text-overflow:ellipsis">${display}</div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 16px">
             ${['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','0','.','='].map((b,i) => {

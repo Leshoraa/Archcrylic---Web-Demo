@@ -29,10 +29,9 @@ uniform float u_time;
 uniform float u_intensity;
 out vec4 fragColor;
 
-float sdPrismBox(vec3 p, vec3 b, float r) {
+float sdPrismBox(vec3 p, vec3 b, float r, float c) {
   vec3 d = abs(p) - b;
   float box = length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0) - r;
-  float c = 54.0 / u_resolution.y;
   vec3 pCut = abs(p);
   float cut1 = dot(pCut.xy, vec2(0.70710678)) - (b.x + b.y - c) * 0.70710678;
   return max(box, cut1);
@@ -40,12 +39,13 @@ float sdPrismBox(vec3 p, vec3 b, float r) {
 
 float map(vec3 p) {
   float d = 1000.0;
+  float c = 54.0 / max(u_resolution.y, 1.0);
   for(int i = 0; i < 16; i++) {
     if (i >= u_numBoxes) break;
     vec4 box = u_boxes[i];
     vec3 center = vec3(box.xy, 0.0);
     vec3 size = vec3(box.zw, 0.1);
-    float dist = sdPrismBox(p - center, size, 0.015);
+    float dist = sdPrismBox(p - center, size, 0.015, c);
     d = min(d, dist);
   }
   return d;
@@ -63,15 +63,37 @@ vec2 getCoverUV(vec2 fc, vec2 res, vec2 texRes) {
   return (fc/res)*(res/ns) + off;
 }
 
+vec3 sampleTexBlurred(sampler2D tex, vec2 fc, vec2 res, vec2 texRes, float blurSize) {
+  vec3 sum = vec3(0.0);
+  sum += texture(tex, getCoverUV(fc + vec2(-1.0, -1.0) * blurSize, res, texRes)).rgb * 0.0625;
+  sum += texture(tex, getCoverUV(fc + vec2( 0.0, -1.0) * blurSize, res, texRes)).rgb * 0.125;
+  sum += texture(tex, getCoverUV(fc + vec2( 1.0, -1.0) * blurSize, res, texRes)).rgb * 0.0625;
+  sum += texture(tex, getCoverUV(fc + vec2(-1.0,  0.0) * blurSize, res, texRes)).rgb * 0.125;
+  sum += texture(tex, getCoverUV(fc, res, texRes)).rgb * 0.25;
+  sum += texture(tex, getCoverUV(fc + vec2( 1.0,  0.0) * blurSize, res, texRes)).rgb * 0.125;
+  sum += texture(tex, getCoverUV(fc + vec2(-1.0,  1.0) * blurSize, res, texRes)).rgb * 0.0625;
+  sum += texture(tex, getCoverUV(fc + vec2( 0.0,  1.0) * blurSize, res, texRes)).rgb * 0.125;
+  sum += texture(tex, getCoverUV(fc + vec2( 1.0,  1.0) * blurSize, res, texRes)).rgb * 0.0625;
+  return sum;
+}
+
 vec3 calcRefraction(vec3 rd, vec3 n, vec2 fc, vec2 res, vec2 texRes) {
   vec3 refR = refract(rd, n, 1.0/1.45);
   vec3 refG = refract(rd, n, 1.0/1.49);
   vec3 refB = refract(rd, n, 1.0/1.53);
   float str = 0.15 * res.y;
-  vec2 uvR = getCoverUV(fc + (refR.xy-rd.xy)*str, res, texRes);
-  vec2 uvG = getCoverUV(fc + (refG.xy-rd.xy)*str, res, texRes);
-  vec2 uvB = getCoverUV(fc + (refB.xy-rd.xy)*str, res, texRes);
-  return vec3(texture(u_tex, uvR).r, texture(u_tex, uvG).g, texture(u_tex, uvB).b);
+  
+  vec2 coordR = fc + (refR.xy - rd.xy) * str;
+  vec2 coordG = fc + (refG.xy - rd.xy) * str;
+  vec2 coordB = fc + (refB.xy - rd.xy) * str;
+  
+  float blurSize = 24.0 * u_intensity;
+  
+  float r = sampleTexBlurred(u_tex, coordR, res, texRes, blurSize).r;
+  float g = sampleTexBlurred(u_tex, coordG, res, texRes, blurSize).g;
+  float b = sampleTexBlurred(u_tex, coordB, res, texRes, blurSize).b;
+  
+  return vec3(r, g, b);
 }
 
 void main() {

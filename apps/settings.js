@@ -20,6 +20,15 @@ export const SettingsApp = {
           </div>
           <div class="settings-item">
             <div class="settings-item-label">
+              <span class="material-symbols-rounded">wallpaper</span>Change Wallpaper
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="file" id="wallpaper-upload" accept="image/*" style="display:none">
+              <button class="taskbar-btn" id="btn-upload-wallpaper" style="width:auto;height:auto;padding:6px 12px;font-size:var(--text-xs);border-radius:var(--shape-sm)">Choose Image</button>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-label">
               <span class="material-symbols-rounded">water_drop</span>ReniQuid Intensity
             </div>
             <div class="slider-container">
@@ -86,5 +95,21 @@ export const SettingsApp = {
       blurVal.textContent = v + 'px';
       document.documentElement.style.setProperty('--acrylic-blur', v + 'px');
     });
+
+    const wallpaperUpload = body.querySelector('#wallpaper-upload');
+    const btnUpload = body.querySelector('#btn-upload-wallpaper');
+    if (btnUpload && wallpaperUpload) {
+      btnUpload.addEventListener('click', () => wallpaperUpload.click());
+      wallpaperUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (reniquid) reniquid.setImage(event.target.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
   }
 };
