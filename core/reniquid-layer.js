@@ -193,6 +193,11 @@ void main() {
       elements.push(launcherPanel.getBoundingClientRect());
     }
 
+    const contextMenu = document.getElementById('context-menu');
+    if (contextMenu && !contextMenu.classList.contains('hidden')) {
+      elements.push(contextMenu.getBoundingClientRect());
+    }
+
     const windows = document.querySelectorAll('.os-window');
     windows.forEach(win => {
       if (win.style.opacity !== '0' && win.style.display !== 'none') {
