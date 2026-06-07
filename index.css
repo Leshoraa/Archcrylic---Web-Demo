@@ -498,8 +498,7 @@ body {
 .window-titlebar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  padding: 0 16px;
   height: 44px;
   flex-shrink: 0;
   background: transparent;
@@ -512,6 +511,7 @@ body {
 }
 
 .window-title {
+  order: 1;
   flex: 1;
   font-size: var(--text-sm);
   font-weight: 500;
@@ -522,20 +522,35 @@ body {
 }
 
 .window-controls {
+  order: 2;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .win-ctrl {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border: none;
   background: transparent;
   cursor: pointer;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform var(--dur-fast), opacity var(--dur-fast);
-  opacity: 0.6;
+  opacity: 0.65;
+}
+
+.win-ctrl.minimize {
+  order: 1;
+}
+
+.win-ctrl.maximize {
+  order: 2;
+}
+
+.win-ctrl.close {
+  order: 3;
 }
 
 .win-ctrl:hover {
@@ -543,29 +558,31 @@ body {
   opacity: 1;
 }
 
-.win-ctrl.close {
-  background: var(--color-on-surface);
-  clip-path: polygon(0 0, 100% 0, 0 100%);
+.win-ctrl::after {
+  content: '';
+  box-sizing: border-box;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
 }
 
-.win-ctrl.minimize {
-  background: transparent;
+.win-ctrl.close::after {
+  width: 8px;
+  height: 8px;
+  background: var(--color-on-surface);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
 .win-ctrl.minimize::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 8px;
   height: 1.5px;
   background: var(--color-on-surface);
 }
 
-.win-ctrl.maximize {
+.win-ctrl.maximize::after {
+  width: 8px;
+  height: 8px;
   border: 1px solid var(--color-on-surface);
   background: transparent;
-  box-sizing: border-box;
+}
 }
 
 .window-body {
