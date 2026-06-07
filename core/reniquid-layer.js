@@ -6,18 +6,10 @@ export class ReniQuidLayer {
     if (!this.gl) throw new Error('WebGL 2.0 not supported');
     this.running = false;
     this.intensity = 0.7;
-    this.mouseX = window.innerWidth / 2;
-    this.mouseY = window.innerHeight / 2;
-    this.idleTime = 0;
-    this.lastTime = performance.now();
     this.imageLoaded = false;
-    this.NUM_POINTS = 5;
-    this.points = Array.from({ length: this.NUM_POINTS }, () => ({
-      x: window.innerWidth / 2, y: window.innerHeight / 2, vx: 0, vy: 0
-    }));
-    this.targetPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    this.mappedPoints = new Float32Array(this.NUM_POINTS * 2);
-    this.idleAngle = 0;
+    this.mappedBoxes = new Float32Array(16 * 4);
+    this.numBoxes = 0;
+    this.lastTime = performance.now();
   }
 
   init() {
@@ -29,63 +21,32 @@ void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
     const fs = `#version 300 es
 precision highp float;
 uniform vec2 u_resolution;
-uniform vec2 u_points[5];
+uniform vec4 u_boxes[16];
+uniform int u_numBoxes;
 uniform sampler2D u_tex;
 uniform vec2 u_texRes;
 uniform float u_time;
 uniform float u_intensity;
 out vec4 fragColor;
 
-float hash(float n) { return fract(sin(n) * 1e4); }
-float noise(vec3 x) {
-  const vec3 step = vec3(110, 241, 171);
-  vec3 i = floor(x); vec3 f = fract(x);
-  float n = dot(i, step);
-  vec3 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(hash(n + dot(step, vec3(0,0,0))), hash(n + dot(step, vec3(1,0,0))), u.x),
-                 mix(hash(n + dot(step, vec3(0,1,0))), hash(n + dot(step, vec3(1,1,0))), u.x), u.y),
-             mix(mix(hash(n + dot(step, vec3(0,0,1))), hash(n + dot(step, vec3(1,0,1))), u.x),
-                 mix(hash(n + dot(step, vec3(0,1,1))), hash(n + dot(step, vec3(1,1,1))), u.x), u.y), u.z);
-}
-
-float smin(float a, float b, float k) {
-  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-  return mix(b, a, h) - k * h * (1.0 - h);
-}
-
-vec3 rotateX(vec3 p, float a) {
-  float c = cos(a), s = sin(a);
-  return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z);
-}
-vec3 rotateY(vec3 p, float a) {
-  float c = cos(a), s = sin(a);
-  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
-}
-vec3 rotateZ(vec3 p, float a) {
-  float c = cos(a), s = sin(a);
-  return vec3(c*p.x - s*p.y, s*p.x + c*p.y, p.z);
-}
-
-float sdTriPrism(vec3 p, vec2 h) {
-  vec3 q = abs(p);
-  float d = max(q.z - h.y, max(q.x * 0.866025 + p.y * 0.5, -p.y) - h.x * 0.5);
-  return d - 0.03;
+float sdPrismBox(vec3 p, vec3 b, float r) {
+  vec3 d = abs(p) - b;
+  float box = length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0) - r;
+  vec3 pCut = abs(p);
+  float cut1 = dot(pCut.xy, vec2(0.70710678)) - (b.x + b.y) * 0.707;
+  float cut2 = dot(pCut.yz, vec2(0.70710678)) - (b.y + b.z) * 0.707;
+  return max(box, max(cut1, cut2));
 }
 
 float map(vec3 p) {
   float d = 1000.0;
-  for(int i = 0; i < 5; i++) {
-    vec3 center = vec3(u_points[i], 0.0);
-    vec3 pi = p - center;
-    float angleY = u_time * 0.5 + float(i) * 0.4;
-    float angleX = u_time * 0.3 + float(i) * 0.25;
-    float angleZ = u_time * 0.2 + float(i) * 0.15;
-    pi = rotateY(pi, angleY);
-    pi = rotateX(pi, angleX);
-    pi = rotateZ(pi, angleZ);
-    float radius = (0.55 - float(i) * 0.07) * u_intensity;
-    float dist = sdTriPrism(pi, vec2(radius, radius * 1.1));
-    d = (i == 0) ? dist : smin(d, dist, 0.22);
+  for(int i = 0; i < 16; i++) {
+    if (i >= u_numBoxes) break;
+    vec4 box = u_boxes[i];
+    vec3 center = vec3(box.xy, 0.0);
+    vec3 size = vec3(box.zw, 0.1);
+    float dist = sdPrismBox(p - center, size, 0.015);
+    d = min(d, dist);
   }
   return d;
 }
@@ -176,7 +137,8 @@ void main() {
 
     this.uniforms = {
       resolution: gl.getUniformLocation(this.program, 'u_resolution'),
-      points: gl.getUniformLocation(this.program, 'u_points'),
+      boxes: gl.getUniformLocation(this.program, 'u_boxes'),
+      numBoxes: gl.getUniformLocation(this.program, 'u_numBoxes'),
       tex: gl.getUniformLocation(this.program, 'u_tex'),
       texRes: gl.getUniformLocation(this.program, 'u_texRes'),
       time: gl.getUniformLocation(this.program, 'u_time'),
@@ -199,18 +161,8 @@ void main() {
       this.imageLoaded = true;
     };
 
-    this._setupEvents();
     this._resize();
     window.addEventListener('resize', () => this._resize());
-  }
-
-  _setupEvents() {
-    const update = (x, y) => {
-      this.mouseX = x;
-      this.mouseY = y;
-      this.idleTime = 0;
-    };
-    window.addEventListener('pointermove', (e) => update(e.clientX, e.clientY));
   }
 
   _resize() {
@@ -220,63 +172,56 @@ void main() {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  _updatePhysics(dt) {
-    if (dt > 0.03) dt = 0.03;
-    const K = 280, M = 1, C = 1.3 * Math.sqrt(K * M);
-    const KT = 380, CT = 1.4 * Math.sqrt(KT * M);
+  _updateElements() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const elements = [];
 
-    this.idleTime += dt;
-    this.idleAngle += dt * 0.3;
+    const taskbar = document.getElementById('taskbar');
+    if (taskbar && !taskbar.classList.contains('hidden-bar')) {
+      elements.push(taskbar.getBoundingClientRect());
+    }
 
-    const idleFactor = Math.min(this.idleTime / 3, 1);
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    const idleX = cx + Math.sin(this.idleAngle) * 120 * idleFactor;
-    const idleY = cy + Math.cos(this.idleAngle * 0.7) * 80 * idleFactor;
+    const notif = document.getElementById('notification-panel');
+    if (notif && notif.classList.contains('visible')) {
+      elements.push(notif.getBoundingClientRect());
+    }
 
-    const pullStrength = 1 - idleFactor;
-    this.targetPos.x = this.mouseX * pullStrength + idleX * (1 - pullStrength);
-    this.targetPos.y = this.mouseY * pullStrength + idleY * (1 - pullStrength);
+    const windows = document.querySelectorAll('.os-window');
+    windows.forEach(win => {
+      if (win.style.opacity !== '0' && win.style.display !== 'none') {
+        elements.push(win.getBoundingClientRect());
+      }
+    });
 
-    const p0 = this.points[0];
-    let fx = K * (this.targetPos.x - p0.x) - C * p0.vx;
-    let fy = K * (this.targetPos.y - p0.y) - C * p0.vy;
-    p0.vx += (fx / M) * dt;
-    p0.vy += (fy / M) * dt;
-    p0.x += p0.vx * dt;
-    p0.y += p0.vy * dt;
+    this.numBoxes = Math.min(elements.length, 16);
+    for (let i = 0; i < this.numBoxes; i++) {
+      const el = elements[i];
+      const cx = el.left + el.width / 2;
+      const cy = el.top + el.height / 2;
+      const rx = el.width / 2;
+      const ry = el.height / 2;
 
-    for (let i = 1; i < this.NUM_POINTS; i++) {
-      const p = this.points[i];
-      const t = this.points[i - 1];
-      fx = KT * (t.x - p.x) - CT * p.vx;
-      fy = KT * (t.y - p.y) - CT * p.vy;
-      p.vx += (fx / M) * dt;
-      p.vy += (fy / M) * dt;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
+      this.mappedBoxes[i * 4] = ((cx - 0.5 * w) / h) * 3;
+      this.mappedBoxes[i * 4 + 1] = (((h - cy) - 0.5 * h) / h) * 3;
+      this.mappedBoxes[i * 4 + 2] = (rx / h) * 3;
+      this.mappedBoxes[i * 4 + 3] = (ry / h) * 3;
     }
   }
 
   _render(time) {
     if (!this.running) return;
     const now = performance.now();
-    const dt = (now - this.lastTime) / 1000;
     this.lastTime = now;
-    this._updatePhysics(dt);
+    
+    this._updateElements();
 
     const gl = this.gl;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-
-    for (let i = 0; i < this.NUM_POINTS; i++) {
-      this.mappedPoints[i * 2] = ((this.points[i].x - 0.5 * w) / h) * 3;
-      this.mappedPoints[i * 2 + 1] = (((h - this.points[i].y) - 0.5 * h) / h) * 3;
-    }
 
     gl.useProgram(this.program);
     gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
-    gl.uniform2fv(this.uniforms.points, this.mappedPoints);
+    gl.uniform4fv(this.uniforms.boxes, this.mappedBoxes);
+    gl.uniform1i(this.uniforms.numBoxes, this.numBoxes);
     gl.uniform1f(this.uniforms.time, time * 0.001);
     gl.uniform1f(this.uniforms.intensity, this.intensity);
     if (this.imageLoaded) gl.uniform2f(this.uniforms.texRes, this.bgImage.width, this.bgImage.height);
