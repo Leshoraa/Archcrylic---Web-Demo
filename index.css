@@ -143,7 +143,9 @@ html, body {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 10px; height: 52px;
   border-radius: var(--shape-pill);
-  box-shadow: var(--shadow-lg);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   transition: transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease);
 }
 #taskbar.hidden-bar { transform: translateX(-50%) translateY(80px); opacity: 0; }
@@ -279,13 +281,15 @@ html, body {
   position: absolute;
   min-width: 420px; min-height: 300px;
   border-radius: var(--shape-lg);
-  box-shadow: var(--shadow-xl);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   display: flex; flex-direction: column;
   overflow: hidden;
   transition: box-shadow var(--dur-fast);
   animation: windowOpen var(--dur-slow) var(--ease) forwards;
 }
-.os-window.focused { box-shadow: var(--shadow-xl), 0 0 0 1px var(--acrylic-border-focus); }
+.os-window.focused { box-shadow: none; }
 
 @keyframes windowOpen {
   from { opacity: 0; transform: scale(0.92) translateY(20px); }
