@@ -85,17 +85,25 @@ html, body {
 }
 
 .acrylic {
-  background: var(--acrylic-tint);
-  backdrop-filter: blur(var(--acrylic-blur)) saturate(1.8);
-  -webkit-backdrop-filter: blur(var(--acrylic-blur)) saturate(1.8);
-  border: 1px solid var(--acrylic-border);
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 25%, transparent 25.1%), var(--acrylic-tint);
+  backdrop-filter: blur(var(--acrylic-blur)) saturate(2.0);
+  -webkit-backdrop-filter: blur(var(--acrylic-blur)) saturate(2.0);
+  border: 1px solid transparent;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 25%, transparent 25.1%), linear-gradient(var(--acrylic-tint), var(--acrylic-tint)), linear-gradient(135deg, rgba(196,181,253,0.35) 0%, rgba(156,163,217,0.2) 30%, rgba(240,180,210,0.35) 60%, rgba(165,214,167,0.2) 80%, rgba(255,255,255,0.45) 100%);
+  background-origin: padding-box, padding-box, border-box;
+  background-clip: padding-box, padding-box, border-box;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.25), inset 1px 1px 0 0 rgba(255,255,255,0.15), inset 0 -1px 0 0 rgba(0,0,0,0.4), inset -1px -1px 0 0 rgba(0,0,0,0.2), var(--shadow-md);
 }
 
 .acrylic-heavy {
-  background: var(--acrylic-tint-heavy);
-  backdrop-filter: blur(var(--acrylic-blur-heavy)) saturate(1.6);
-  -webkit-backdrop-filter: blur(var(--acrylic-blur-heavy)) saturate(1.6);
-  border: 1px solid var(--acrylic-border);
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 20%, transparent 20.1%), var(--acrylic-tint-heavy);
+  backdrop-filter: blur(var(--acrylic-blur-heavy)) saturate(1.8);
+  -webkit-backdrop-filter: blur(var(--acrylic-blur-heavy)) saturate(1.8);
+  border: 1px solid transparent;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 20%, transparent 20.1%), linear-gradient(var(--acrylic-tint-heavy), var(--acrylic-tint-heavy)), linear-gradient(135deg, rgba(196,181,253,0.4) 0%, rgba(156,163,217,0.2) 30%, rgba(240,180,210,0.4) 60%, rgba(165,214,167,0.2) 80%, rgba(255,255,255,0.5) 100%);
+  background-origin: padding-box, padding-box, border-box;
+  background-clip: padding-box, padding-box, border-box;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.3), inset 1px 1px 0 0 rgba(255,255,255,0.18), inset 0 -1px 0 0 rgba(0,0,0,0.5), inset -1px -1px 0 0 rgba(0,0,0,0.25), var(--shadow-xl);
 }
 
 #reniquid-canvas {
@@ -229,8 +237,12 @@ html, body {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 20px;
   border-radius: var(--shape-pill);
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid transparent;
+  background-image: linear-gradient(rgba(255,255,255,0.04), rgba(255,255,255,0.04)), linear-gradient(135deg, rgba(196,181,253,0.3) 0%, rgba(240,180,210,0.3) 100%);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.15);
   transition: background var(--dur-fast), border-color var(--dur-fast);
 }
 #launcher-search:focus-within {
@@ -293,7 +305,7 @@ html, body {
 .window-titlebar {
   display: flex; align-items: center; gap: 10px;
   padding: 0 12px; height: 44px; flex-shrink: 0;
-  background: rgba(22,22,32,0.85);
+  background: rgba(255,255,255,0.03);
   border-bottom: 1px solid var(--acrylic-border);
   cursor: grab;
 }
@@ -319,9 +331,7 @@ html, body {
 
 .window-body {
   flex: 1; overflow: auto;
-  background: var(--acrylic-tint-heavy);
-  backdrop-filter: blur(var(--acrylic-blur)) saturate(1.6);
-  -webkit-backdrop-filter: blur(var(--acrylic-blur)) saturate(1.6);
+  background: transparent;
 }
 
 .window-resize-handle {
@@ -346,8 +356,9 @@ html, body {
 .notification-card {
   padding: 14px 16px;
   border-radius: var(--shape-md);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2);
   display: flex; gap: 12px; align-items: flex-start;
   animation: notifIn var(--dur-slow) var(--ease-spring) forwards;
 }

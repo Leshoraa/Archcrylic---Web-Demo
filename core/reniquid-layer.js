@@ -53,14 +53,39 @@ float smin(float a, float b, float k) {
   return mix(b, a, h) - k * h * (1.0 - h);
 }
 
+vec3 rotateX(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z);
+}
+vec3 rotateY(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+}
+vec3 rotateZ(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(c*p.x - s*p.y, s*p.x + c*p.y, p.z);
+}
+
+float sdTriPrism(vec3 p, vec2 h) {
+  vec3 q = abs(p);
+  float d = max(q.z - h.y, max(q.x * 0.866025 + p.y * 0.5, -p.y) - h.x * 0.5);
+  return d - 0.03;
+}
+
 float map(vec3 p) {
-  float surfaceNoise = noise(p * 2.0 + u_time * 0.5) * 0.02 * u_intensity;
   float d = 1000.0;
   for(int i = 0; i < 5; i++) {
-    float radius = (0.5 - float(i) * 0.08) * u_intensity;
     vec3 center = vec3(u_points[i], 0.0);
-    float dist = length(p - center) - radius + surfaceNoise;
-    d = (i == 0) ? dist : smin(d, dist, 0.6);
+    vec3 pi = p - center;
+    float angleY = u_time * 0.5 + float(i) * 0.4;
+    float angleX = u_time * 0.3 + float(i) * 0.25;
+    float angleZ = u_time * 0.2 + float(i) * 0.15;
+    pi = rotateY(pi, angleY);
+    pi = rotateX(pi, angleX);
+    pi = rotateZ(pi, angleZ);
+    float radius = (0.55 - float(i) * 0.07) * u_intensity;
+    float dist = sdTriPrism(pi, vec2(radius, radius * 1.1));
+    d = (i == 0) ? dist : smin(d, dist, 0.22);
   }
   return d;
 }
@@ -78,10 +103,10 @@ vec2 getCoverUV(vec2 fc, vec2 res, vec2 texRes) {
 }
 
 vec3 calcRefraction(vec3 rd, vec3 n, vec2 fc, vec2 res, vec2 texRes) {
-  vec3 refR = refract(rd, n, 1.0/1.32);
-  vec3 refG = refract(rd, n, 1.0/1.33);
-  vec3 refB = refract(rd, n, 1.0/1.34);
-  float str = 0.1 * res.y;
+  vec3 refR = refract(rd, n, 1.0/1.45);
+  vec3 refG = refract(rd, n, 1.0/1.49);
+  vec3 refB = refract(rd, n, 1.0/1.53);
+  float str = 0.15 * res.y;
   vec2 uvR = getCoverUV(fc + (refR.xy-rd.xy)*str, res, texRes);
   vec2 uvG = getCoverUV(fc + (refG.xy-rd.xy)*str, res, texRes);
   vec2 uvB = getCoverUV(fc + (refB.xy-rd.xy)*str, res, texRes);
@@ -94,9 +119,9 @@ void main() {
   vec3 ro = vec3(0.0, 0.0, 3.0);
   vec3 rd = normalize(vec3(uv, -1.0));
   vec3 sp = vec3((uv + vec2(0.0, 0.05))*3.0, 0.0);
-  float sa = mix(0.9, 1.0, smoothstep(0.0, 0.2, map(sp)));
+  float sa = mix(0.85, 1.0, smoothstep(0.0, 0.25, map(sp)));
   float t = 0.0; float maxD = 10.0; vec3 p;
-  for(int i = 0; i < 32; i++) {
+  for(int i = 0; i < 48; i++) {
     p = ro + rd*t; float d = map(p);
     if(d < 0.001 || t > maxD) break; t += d;
   }
@@ -104,11 +129,22 @@ void main() {
   vec3 col = texture(u_tex, getCoverUV(fc, u_resolution.xy, texRes)).rgb * sa;
   if(t < maxD) {
     vec3 n = calcNormal(p);
-    vec3 l = normalize(vec3(1.0, 1.5, 2.0));
+    vec3 l1 = normalize(vec3(2.0, 3.0, 4.0));
+    vec3 l2 = normalize(vec3(-3.0, -1.0, 2.0));
     vec3 refrCol = calcRefraction(rd, n, fc, u_resolution.xy, texRes);
-    float edge = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
-    col = mix(refrCol, vec3(0.9, 0.95, 1.0), edge * 0.2);
-    col += vec3(1.0) * pow(max(dot(n, normalize(-rd+l)), 0.0), 800.0) * 1.5;
+    vec3 reflDir = reflect(rd, n);
+    vec2 uvRefl = getCoverUV(fc + reflDir.xy * 0.18 * u_resolution.y, u_resolution.xy, texRes);
+    vec3 reflCol = texture(u_tex, uvRefl).rgb;
+    float fresnel = 0.04 + 0.96 * pow(1.0 - max(dot(-rd, n), 0.0), 5.0);
+    col = mix(refrCol, reflCol, fresnel);
+    col *= vec3(0.95, 0.98, 1.0);
+    vec3 h1 = normalize(-rd + l1);
+    float spec1 = pow(max(dot(n, h1), 0.0), 512.0);
+    vec3 h2 = normalize(-rd + l2);
+    float spec2 = pow(max(dot(n, h2), 0.0), 128.0);
+    col += vec3(1.0) * spec1 * 1.8 + vec3(0.7, 0.85, 1.0) * spec2 * 0.6;
+    float edgeGlow = pow(1.0 - max(dot(n, -rd), 0.0), 4.0);
+    col += vec3(0.9, 0.95, 1.0) * edgeGlow * 0.25;
   }
   fragColor = vec4(col, 1.0);
 }`;
@@ -133,7 +169,7 @@ void main() {
 
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
     const pos = gl.getAttribLocation(this.program, 'a_position');
     gl.enableVertexAttribArray(pos);
     gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
@@ -149,7 +185,7 @@ void main() {
 
     this.bgTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.bgTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255]));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
 
     this.bgImage = new Image();
     this.bgImage.src = this.imageSrc;
@@ -186,8 +222,8 @@ void main() {
 
   _updatePhysics(dt) {
     if (dt > 0.03) dt = 0.03;
-    const K = 200, M = 1, C = 2 * Math.sqrt(K * M);
-    const KT = 300, CT = 2 * Math.sqrt(KT * M);
+    const K = 280, M = 1, C = 1.3 * Math.sqrt(K * M);
+    const KT = 380, CT = 1.4 * Math.sqrt(KT * M);
 
     this.idleTime += dt;
     this.idleAngle += dt * 0.3;
