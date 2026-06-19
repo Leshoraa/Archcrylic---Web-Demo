@@ -33,7 +33,7 @@ export const SettingsApp = {
             </div>
             <div style="display:flex;align-items:center;gap:10px">
               <input type="file" id="wallpaper-upload" accept="image/*" style="display:none">
-              <button class="taskbar-btn" id="btn-upload-wallpaper" style="width:auto;height:auto;padding:6px 12px;font-size:var(--text-xs);border-radius:var(--shape-sm)">Choose Image</button>
+              <button class="btn-acrylic" id="btn-upload-wallpaper">Choose Image</button>
             </div>
           </div>
           <div class="settings-item">

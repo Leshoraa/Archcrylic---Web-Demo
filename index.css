@@ -2,9 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --color-primary: #C4B5FD;
-  --color-primary-dim: #9B8ADB;
-  --color-primary-container: #3B2D6B;
+  --color-primary: #ffffff;
+  --color-primary-dim: #d4d4d4;
+  --color-primary-container: #2d2d2d;
   --color-secondary: #9CA3D9;
   --color-tertiary: #F0B4D2;
   --color-surface: #0F0F14;
@@ -875,19 +875,42 @@ body {
   color: var(--color-on-surface-variant);
 }
 
+.btn-acrylic {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-on-surface);
+  font-family: 'Outfit', sans-serif;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  transition: background var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+
+.btn-acrylic:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-acrylic:active {
+  transform: scale(0.95);
+}
+
 .toggle {
-  width: 44px;
+  width: 46px;
   height: 24px;
-  border-radius: var(--shape-pill);
-  background: var(--color-outline-variant);
-  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
   cursor: pointer;
   position: relative;
-  transition: background var(--dur-normal) var(--ease);
+  transition: background var(--dur-normal), border-color var(--dur-normal);
 }
 
 .toggle.on {
-  background: var(--color-primary);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .toggle::after {
@@ -895,15 +918,16 @@ body {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform var(--dur-normal) var(--ease-spring);
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  clip-path: polygon(3px 0, 13px 0, 16px 3px, 16px 13px, 13px 16px, 3px 16px, 0 13px, 0 3px);
+  transition: transform var(--dur-normal) var(--ease-spring), background var(--dur-normal);
 }
 
 .toggle.on::after {
-  transform: translateX(20px);
+  transform: translateX(22px);
+  background: var(--color-primary);
 }
 
 .slider-container {
@@ -915,20 +939,32 @@ body {
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 120px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-outline-variant);
+  width: 140px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  clip-path: polygon(3px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px), 0 3px);
   outline: none;
+  transition: background var(--dur-fast);
+}
+
+.slider:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
   background: var(--color-primary);
+  clip-path: polygon(4px 0, 12px 0, 16px 4px, 16px 12px, 12px 16px, 4px 16px, 0 12px, 0 4px);
   cursor: pointer;
+  transition: transform 0.1s, background var(--dur-fast);
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #fff;
+  transform: scale(1.15);
 }
 
 .files-body {
